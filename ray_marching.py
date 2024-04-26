@@ -15,6 +15,7 @@ from scene.objects.modifier import *
 from scene.lights import PointLight
 from processing import ToneMapping
 from util import get_initial_velocity
+import time
 
 # Constants
 
@@ -24,8 +25,8 @@ from util import get_initial_velocity
 # 240p = 426 x 240 pixels
 # 720p = 1280 x 720 pixels
 # 1080p = 1920 x 1080 pixels
-image_height = 36
-image_width = 64
+image_height = int(36 / 2)
+image_width = int(64 / 2)
 image_size = (image_width, image_height)
 
 contrast = 70
@@ -150,6 +151,7 @@ scene = Scene(
 
 # Create Progress Bar
 pbar = tqdm(total=image_width * image_height, unit=" pixels")
+start_time = time.time()
 
 for x in range(0, image_width):
     for y in range(0, image_height):
@@ -164,6 +166,9 @@ for x in range(0, image_width):
 
         # Update Progress Bar by 1
         pbar.update(1)
+
+end_time = time.time()
+print(f"Rendered in {end_time - start_time:.2f} seconds")
 
 # Save Render
 image.save("render.png", format="png")

@@ -19,6 +19,7 @@ class Scene:
         self.max_distance = max_distance
         self.do_shading = do_shading
         self.distances = []
+        self.normal = [0, 0, 0]
 
     def getSDF(self, ray: Ray) -> float:
         self.distances = []
@@ -29,29 +30,19 @@ class Scene:
         return min(self.distances)
 
     def getNormal(self, ray: Ray):
-        d = self.getSDF(ray)
-
-        x_normal = d - self.getSDF(
-            Ray((0, 0, 0), ray.getPosition() - (self.min_distance, 0.0, 0.0))
-        )
-        y_normal = d - self.getSDF(
-            Ray((0, 0, 0), ray.getPosition() - (0.0, self.min_distance, 0.0))
-        )
-        z_normal = d - self.getSDF(
-            Ray((0, 0, 0), ray.getPosition() - (0.0, 0.0, self.min_distance))
-        )
-
-        normal = np.zeros(3)
-        normal[0] = x_normal
-        normal[1] = y_normal
-        normal[2] = z_normal
-        return normalize(normal)
+        normal = self.getNearestObject(ray).getNormal(ray)
+        self.normal = normal
+        return normal
+        
+    def getNearestObject(self, ray: Ray):
+        # Base Color of object
+        index = np.argmin(self.distances)  # Get Index of nearest object
+        return self.objects[index]  # Get nearest object
+        
 
     def getColor(self, ray: Ray):
 
-        # Base Color of object
-        index = np.argmin(self.distances)  # Get Index of nearest object
-        nearest_object = self.objects[index]  # Get nearest object
+        nearest_object = self.getNearestObject(ray)
 
         # Set the base color of the pixel to the nearest objects material color
         object_color = nearest_object.getMaterial().getColor()
