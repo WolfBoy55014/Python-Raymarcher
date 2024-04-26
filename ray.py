@@ -4,9 +4,9 @@ from numba import jit
 
 
 class Ray:
-    distance_traveled = 0
-    velocity = np.ndarray
-    position = np.ndarray
+    distance_traveled: float = 0
+    velocity = np.zeros(3)
+    position = np.zeros(3)
 
     def __init__(self, velocity: np.ndarray, position: np.ndarray) -> None:
         self.velocity = self._normalize(velocity)
@@ -45,21 +45,24 @@ class Ray:
     def getZ(self):
         return self.position[2]
 
-    
     def step(self, distance):
-        self.position, self.distance_traveled = Ray._step(self.velocity, self.position, distance, self.distance_traveled)
-        
+        self.position, self.distance_traveled = Ray._step(
+            self.velocity, self.position, distance, self.distance_traveled
+        )
+
     @jit(cache=True)
     def _step(velocity, position, distance, distance_traveled):
         try:
-            a = math.sqrt(velocity[0]**2 + velocity[1]**2 + velocity[2]**2)
+            a = math.sqrt(velocity[0] ** 2 + velocity[1] ** 2 + velocity[2] ** 2)
         except:
             a = 0
 
         b = np.divide(velocity, a)
         deltaPos = np.multiply(b, distance)
 
-        new_position = np.asarray(position, np.float32) + np.asarray(deltaPos, np.float32)
+        new_position = np.asarray(position, np.float32) + np.asarray(
+            deltaPos, np.float32
+        )
         distance_traveled = distance_traveled + distance
-        
+
         return new_position, distance_traveled

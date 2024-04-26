@@ -25,8 +25,8 @@ import time
 # 240p = 426 x 240 pixels
 # 720p = 1280 x 720 pixels
 # 1080p = 1920 x 1080 pixels
-image_height = 72
-image_width = 128
+image_height = 18
+image_width = 32
 image_size = (image_width, image_height)
 
 contrast = 70
@@ -118,24 +118,24 @@ top_light = PointLight((0, 0, -2), 2, (255, 255, 255))
 
 
 # Define Scene
-# scene = Scene(
-#     (
-#         ground,
-#         desk_top1,
-#         desk_top2,
-#         desk_leg1,
-#         desk_leg2,
-#         desk_leg3,
-#         drawer1,
-#         drawer2,
-#         drawer_mid,
-#         drawer_bottom,
-#     ),
-#     (side_light1, side_light2, top_light),
-#     min_distance,
-#     max_distance,
-#     True,
-# )
+scene = Scene(
+    (
+        ground,
+        desk_top1,
+        desk_top2,
+        desk_leg1,
+        desk_leg2,
+        desk_leg3,
+        drawer1,
+        drawer2,
+        drawer_mid,
+        drawer_bottom,
+    ),
+    (side_light1, side_light2, top_light),
+    min_distance,
+    max_distance,
+    True,
+)
 
 # debug = Box((0, 0, -0.5), (0.5, 0.5, 0.5), orange_mat)
 # debug = Cube((0, 0, -0.5), 0.5, orange_mat)
@@ -143,13 +143,16 @@ top_light = PointLight((0, 0, -2), 2, (255, 255, 255))
 # debug = Cylinder((0, 0, -0.5), 0.5, 0.3, orange_mat)
 # debug = RoundBox((0, 0, -0.5), (0.5, 0.5, 0.5), 0.1, orange_mat)
 
-scene = Scene(
-    (ground,),
-    (side_light1,),
-    min_distance,
-    max_distance,
-    True
-)
+# cube = Cube((0, 0, -0.5), 0.5, orange_mat)
+# sphere = Sphere((0, 0, -0.5), 0.32, green_mat)
+# 
+# scene = Scene(
+#     (ground, IntersectionObject(sphere, cube)),
+#     (side_light1,),
+#     min_distance,
+#     max_distance,
+#     True
+# )
 
 # Compiling
 render(0, 0, scene)
@@ -177,6 +180,7 @@ for x in range(0, image_width):
         pbar.update(1)
 
 end_time = time.time()
+pbar.close()
 print(f"Rendered in {end_time - start_time:.2f} seconds")
 
 # Save Render

@@ -1,7 +1,9 @@
 from ray import Ray
 import numpy as np
 import math
-from util import normalize, clamp
+from util import clamp
+from numba import jit
+
 
 class Scene:
 
@@ -33,12 +35,11 @@ class Scene:
         normal = self.getNearestObject(ray).getNormal(ray)
         self.normal = normal
         return normal
-        
+
     def getNearestObject(self, ray: Ray):
         # Base Color of object
         index = np.argmin(self.distances)  # Get Index of nearest object
         return self.objects[index]  # Get nearest object
-        
 
     def getColor(self, ray: Ray):
 
@@ -47,42 +48,62 @@ class Scene:
         # Set the base color of the pixel to the nearest objects material color
         object_color = nearest_object.getMaterial().getColor()
 
-        color = (17, 17, 17)  # Start with a blank (or black) color
-
         # Calculate the scene's normal at the ray's position
         normal = self.getNormal(ray)
+
+        color = self.calculateLighting(ray, normal, object_color)
+
+        return color
+
+    def calculateLighting(self, ray, normal, base_color):
+        color = (17, 17, 17)  # Start with a blank (or black) color
 
         # Shading
         for light in self.lights:
             if not self.do_shading:
-                color = object_color
+                color = base_color
                 break
 
-            # Diffused Lighting
-            brightness = np.dot(light.getLightVector(ray), normal)
-
-            # Clamp brightness between 0 and 1, because negative brightness does not exist!
-            brightness = clamp(brightness, 0, 1)
-
-            # Apply shadows
-            brightness *= self.isInShadow(ray, light, normal, 16)
-
-            # Multiply the brightness by the light's intensity to allow for dimming
-            brightness *= light.getIntensity()
-
-            # Get the light's color
-            light_color = light.getColor()
-
-            # Now we are going to compine the light_color and object_color into one by multiplying
-            # This works best when at least one is converted to 0 - 1.
-            light_color = np.divide(light_color, 255)
-
-            # object_color * light_color * brightness
-            color += np.multiply(np.multiply(object_color, light_color), brightness)
+            color += Scene._lighting(
+                base_color,
+                normal,
+                light.getLightVector(ray),
+                light.getColor(),
+                light.getIntensity(),
+                self.calculateShadows(ray, light, normal, 16),
+            )
 
         return color
 
-    def isInShadow(self, ray: Ray, light, normal, softness):
+    @jit(cache=True)
+    def _lighting(
+        base_color: np.ndarray,
+        normal: np.ndarray,
+        light_vector: np.ndarray,
+        light_color: np.ndarray,
+        light_intensity: float,
+        shadow: float,
+    ):
+        # Diffused Lighting
+        brightness = np.dot(light_vector, normal)
+
+        # Clamp brightness between 0 and 1, because negative brightness does not exist!
+        brightness = clamp(brightness, 0, 1)
+
+        # Apply shadows
+        brightness = brightness * shadow
+
+        # Multiply the brightness by the light's intensity to allow for dimming
+        brightness = brightness * light_intensity
+
+        # Now we are going to combine the light_color and object_color into one by multiplying
+        # This works best when at least one is converted to 0 - 1.
+        light_color = np.divide(np.asarray(light_color), np.full(3, 255, np.int64))
+
+        # object_color * light_color * brightness
+        return np.multiply(np.multiply(np.asarray(base_color, np.float64), light_color), brightness)
+
+    def calculateShadows(self, ray: Ray, light, normal, softness):
         starting_pos = ray.getPosition()
         starting_velocity = ray.getVelocity()
 

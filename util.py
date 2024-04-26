@@ -14,9 +14,10 @@ def normalize(array: np.ndarray):
 
     return normalized_array
 
+
 @jit(cache=True)
 def dist(a: np.ndarray, b: np.ndarray):
-    if (len(a) == 2):
+    if len(a) == 2:
         return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
     return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2)
 
@@ -32,10 +33,12 @@ def get_initial_velocity(x, y, image_width, image_height, fov, camera_rotation):
     )
 
 
+@jit(cache=True)
 def cast(value, old_min, old_max, new_min, new_max):
     return (((value - old_min) * (new_max - new_min)) / (old_max - old_min)) + new_min
 
 
+@jit(cache=True)
 def clamp(value, min, max):
     if value > max:
         return max
