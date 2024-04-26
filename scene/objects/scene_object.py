@@ -13,14 +13,17 @@ class SceneObject:
         pass
 
     def getSDF(self, ray: Ray) -> float:
-        pass
+        return self._sdf(ray.getPosition())
 
+    def _sdf(ray_position :np.ndarray):
+        pass
+    
     def getMaterial(self):
         pass
 
     def getNormal(self, ray: Ray):
         d = self.getSDF(ray)
-        min_distance = 0.01
+        min_distance = 0.001
 
         x_normal = d - self.getSDF(
             Ray((0, 0, 0), ray.getPosition() - (min_distance, 0.0, 0.0))

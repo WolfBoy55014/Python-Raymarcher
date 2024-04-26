@@ -25,8 +25,8 @@ import time
 # 240p = 426 x 240 pixels
 # 720p = 1280 x 720 pixels
 # 1080p = 1920 x 1080 pixels
-image_height = int(36 / 2)
-image_width = int(64 / 2)
+image_height = 72
+image_width = 128
 image_size = (image_width, image_height)
 
 contrast = 70
@@ -82,10 +82,6 @@ def render(x, y, scene):
     return miss(scene, ray)
 
 
-image = Image.new(mode="RGB", size=image_size)
-
-render_image = image.load()
-
 color1 = (77, 32, 21)
 color2 = (177, 103, 57)
 color3 = (195, 178, 159)
@@ -103,8 +99,8 @@ green_mat = BaseMaterial(color6)
 
 
 # Defining Objects
-desk_top1 = RoundBox((0, 0, -0.6), (2, 0.5, 0.05), 0.0, dark_wood_mat)
-desk_top2 = RoundBox((0, 0, -0.55), (2, 0.5, 0.05), 0.0, dark_wood_mat)
+desk_top1 = Box((0, 0, -0.6), (2, 0.5, 0.05), dark_wood_mat)
+desk_top2 = Box((0, 0, -0.55), (2, 0.5, 0.05), dark_wood_mat)
 desk_leg1 = Box((-0.9, 0, -0.26), (0.05, 0.4, 0.55), dark_wood_mat)
 desk_leg2 = Box((-0.4, 0, -0.26), (0.05, 0.4, 0.55), dark_wood_mat)
 desk_leg3 = Box((0.9, 0, -0.26), (0.05, 0.4, 0.55), dark_wood_mat)
@@ -122,32 +118,45 @@ top_light = PointLight((0, 0, -2), 2, (255, 255, 255))
 
 
 # Define Scene
-scene = Scene(
-    (
-        ground,
-        desk_top1,
-        desk_top2,
-        desk_leg1,
-        desk_leg2,
-        desk_leg3,
-        drawer1,
-        drawer2,
-        drawer_mid,
-        drawer_bottom,
-    ),
-    (side_light1, side_light2, top_light),
-    min_distance,
-    max_distance,
-    True,
-)
-
 # scene = Scene(
-#     (ground, Sphere((0, 0, -0.2), 0.4, orange_mat)),
-#     (side_light1,),
+#     (
+#         ground,
+#         desk_top1,
+#         desk_top2,
+#         desk_leg1,
+#         desk_leg2,
+#         desk_leg3,
+#         drawer1,
+#         drawer2,
+#         drawer_mid,
+#         drawer_bottom,
+#     ),
+#     (side_light1, side_light2, top_light),
 #     min_distance,
 #     max_distance,
-#     True
+#     True,
 # )
+
+# debug = Box((0, 0, -0.5), (0.5, 0.5, 0.5), orange_mat)
+# debug = Cube((0, 0, -0.5), 0.5, orange_mat)
+# debug = Torus((0, 0, -0.25), 0.3, 0.1, orange_mat)
+# debug = Cylinder((0, 0, -0.5), 0.5, 0.3, orange_mat)
+# debug = RoundBox((0, 0, -0.5), (0.5, 0.5, 0.5), 0.1, orange_mat)
+
+scene = Scene(
+    (ground,),
+    (side_light1,),
+    min_distance,
+    max_distance,
+    True
+)
+
+# Compiling
+render(0, 0, scene)
+
+# Create Image
+image = Image.new(mode="RGB", size=image_size)
+render_image = image.load()
 
 # Create Progress Bar
 pbar = tqdm(total=image_width * image_height, unit=" pixels")
@@ -171,15 +180,13 @@ end_time = time.time()
 print(f"Rendered in {end_time - start_time:.2f} seconds")
 
 # Save Render
-image.save("render.png", format="png")
-
+image.save("renders/render.png", format="png")
 
 # Display
-
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
-img = mpimg.imread("render.png")
+img = mpimg.imread("renders/render.png")
 plt.imshow(img)
 plt.axis("off")
 plt.show()

@@ -1,15 +1,24 @@
 import numpy as np
 import math
+from numba import jit
 
+
+@jit(cache=True)
 def normalize(array: np.ndarray):
 
     if np.max(np.abs(array)) == 0:
         return np.zeros(len(array))
 
-    magnitude = math.dist(array, (0, 0, 0))
+    magnitude = math.sqrt(array[0] ** 2 + array[1] ** 2 + array[2] ** 2)
     normalized_array = np.divide(array, magnitude)
 
     return normalized_array
+
+@jit(cache=True)
+def dist(a: np.ndarray, b: np.ndarray):
+    if (len(a) == 2):
+        return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
+    return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2)
 
 
 def get_initial_velocity(x, y, image_width, image_height, fov, camera_rotation):

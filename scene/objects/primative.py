@@ -3,6 +3,8 @@ import numpy as np
 from ray import Ray
 from scene.materials import Material
 from scene.objects.scene_object import SceneObject
+from util import dist
+from numba import jit
 
 
 class Sphere(SceneObject):
@@ -29,7 +31,11 @@ class Sphere(SceneObject):
             The signed distance to the sphere's surface from the ray.
         """
 
-        return math.dist(ray.getPosition(), self.pos) - self.radius
+        return Sphere._sdf(ray.getPosition(), self.pos, self.radius)
+
+    @jit(cache=True)
+    def _sdf(ray_position: np.ndarray, pos: np.ndarray, radius: float):
+        return dist(ray_position, pos) - radius
 
     def getMaterial(self):
         return self.material
@@ -67,14 +73,24 @@ class Torus(SceneObject):
             The signed distance to the torus's surface from the ray.
         """
 
+        return Torus._sdf(
+            ray.getPosition(), self.pos, self.major_radius, self.minor_radius
+        )
+
+    def _sdf(
+        ray_position: np.ndarray,
+        pos: np.ndarray,
+        major_radius: float,
+        minor_radius: float,
+    ):
         # Translate the point by the negative center to effectively move the torus
-        p_relative = np.subtract(ray.getPosition(), self.pos)
+        p_relative = np.subtract(ray_position, pos)
 
         q = (
-            math.dist((p_relative[0], p_relative[1]), (0, 0)) - self.major_radius,
+            dist((p_relative[0], p_relative[1]), (0, 0)) - major_radius,
             p_relative[2],
         )
-        return math.dist(q, (0, 0)) - self.minor_radius
+        return dist(q, (0, 0)) - minor_radius
 
     def getMaterial(self):
         return self.material
@@ -108,12 +124,16 @@ class Cylinder(SceneObject):
             The signed distance to the cylinder's surface from the ray.
         """
 
-        # Translate the point by the negative center to effectively move the cylinder
-        p_relative = np.subtract(ray.getPosition(), self.pos)
+        return Cylinder._sdf(ray.getPosition(), self.pos, self.height, self.radius)
 
-        d = math.dist((p_relative[0], p_relative[1]), (0, 0)) - self.radius
-        r = max(-(p_relative[2] + self.height / 2), d)
-        f = max((p_relative[2] - self.height / 2), r)
+    @jit(cache=True)
+    def _sdf(ray_position: np.ndarray, pos: np.ndarray, height: float, radius: float):
+        # Translate the point by the negative center to effectively move the cylinder
+        p_relative = np.subtract(np.asarray(ray_position), np.asarray(pos))
+
+        d = dist((p_relative[0], p_relative[1]), (0, 0)) - radius
+        r = max(-(p_relative[2] + height / 2), d)
+        f = max((p_relative[2] - height / 2), r)
 
         return f
 
@@ -145,11 +165,14 @@ class Cube(SceneObject):
             The signed distance to the cube's surface from the ray.
         """
 
-        a = self.side_length / 2
-        ray_position = ray.getPosition()
+        return Cube._sdf(ray.getPosition(), self.pos, self.side_length)
+
+    @jit(cache=True)
+    def _sdf(ray_position: np.ndarray, pos: np.ndarray, side_length: float):
+        a = side_length / 2
 
         # Translate the point by the negative center to effectively move the cube
-        p_relative = np.subtract(ray_position, self.pos)
+        p_relative = np.subtract(np.asarray(ray_position), np.asarray(pos))
         d = np.abs(p_relative) - a  # Distance to each face along each axis
         return np.max(d)  # Choose the maximum distance for the closest face
 
@@ -183,11 +206,14 @@ class Box(SceneObject):
             The signed distance to the boxes's surface from the ray.
         """
 
-        a = np.divide(self.side_lengths, 2)
-        ray_position = ray.getPosition()
+        return Box._sdf(ray.getPosition(), self.pos, self.side_lengths)
+
+    @jit(cache=True)
+    def _sdf(ray_position: np.ndarray, pos: np.ndarray, side_lengths: np.ndarray):
+        a = np.divide(np.asarray(side_lengths), np.full(3, 2, np.float64))
 
         # Translate the point by the negative center to effectively move the box
-        p_relative = np.subtract(ray_position, self.pos)
+        p_relative = np.subtract(np.asarray(ray_position), np.asarray(pos))
         d = np.abs(p_relative) - a  # Distance to each face along each axis
         return np.max(d)  # Choose the maximum distance for the closest face
 
@@ -226,15 +252,23 @@ class RoundBox(SceneObject):
             The signed distance to the boxes's surface from the ray.
         """
 
-        a = np.divide(self.side_lengths, 2)
-        ray_position = ray.getPosition()
+        return RoundBox._sdf(
+            ray.getPosition(), self.pos, self.side_lengths, self.radius
+        )
+
+    @jit(cache=True)
+    def _sdf(
+        ray_position: np.ndarray,
+        pos: np.ndarray,
+        side_lengths: np.ndarray,
+        radius: float,
+    ):
+        a = np.divide(np.asarray(side_lengths), np.full(3, 2, np.float64))
 
         # Translate the point by the negative center to effectively move the box
-        p_relative = np.subtract(ray_position, self.pos)
+        p_relative = np.subtract(np.asarray(ray_position), np.asarray(pos))
         d = np.abs(p_relative) - a  # Distance to each face along each axis
-        return (
-            np.max(d) - self.radius
-        )  # Choose the maximum distance for the closest face
+        return np.max(d) - radius  # Choose the maximum distance for the closest face
 
     def getMaterial(self):
         return self.material
@@ -263,20 +297,21 @@ class Plane(SceneObject):
             The signed distance to the plane's surface from the ray.
         """
 
-        if self.axis == "Z":
+        return Plane._sdf(ray.getPosition(), self.pos, self.axis)
+    
+    # @jit(cache=True)     
+    def _sdf(ray_position: np.ndarray, pos: float, axis: str):
+        if axis == "Z":
             return (
-                abs(math.dist(ray.getPosition(), (ray.getX(), ray.getY(), self.pos)))
-                - 0.02
+                abs(ray_position[2] - pos) - 0.02
             )
-        elif self.axis == "Y":
+        elif axis == "Y":
             return (
-                abs(math.dist(ray.getPosition(), (ray.getX(), self.pos, ray.getZ())))
-                - 0.02
+                abs(ray_position[1] - pos) - 0.02
             )
-        elif self.axis == "X":
+        elif axis == "X":
             return (
-                abs(math.dist(ray.getPosition(), (self.pos, ray.getY(), ray.getZ())))
-                - 0.02
+                abs(ray_position[0] - pos) - 0.02
             )
         else:
             print('Invalid Axis, try "X", "Y", or "Z".')
