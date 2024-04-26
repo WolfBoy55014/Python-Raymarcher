@@ -20,7 +20,7 @@ class SceneObject:
 
     def getNormal(self, ray: Ray):
         d = self.getSDF(ray)
-        min_distance = 0.01
+        min_distance = 0.001
 
         x_normal = d - self.getSDF(
             Ray((0, 0, 0), ray.getPosition() - (min_distance, 0.0, 0.0))

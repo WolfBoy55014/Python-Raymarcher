@@ -25,8 +25,8 @@ import time
 # 240p = 426 x 240 pixels
 # 720p = 1280 x 720 pixels
 # 1080p = 1920 x 1080 pixels
-image_height = int(36 / 2)
-image_width = int(64 / 2)
+image_height = 18
+image_width = 32
 image_size = (image_width, image_height)
 
 contrast = 70
@@ -80,11 +80,6 @@ def render(x, y, scene):
             return miss(scene, ray)
 
     return miss(scene, ray)
-
-
-image = Image.new(mode="RGB", size=image_size)
-
-render_image = image.load()
 
 color1 = (77, 32, 21)
 color2 = (177, 103, 57)
@@ -149,6 +144,10 @@ scene = Scene(
 #     True
 # )
 
+# Create Image
+image = Image.new(mode="RGB", size=image_size)
+render_image = image.load()
+
 # Create Progress Bar
 pbar = tqdm(total=image_width * image_height, unit=" pixels")
 start_time = time.time()
@@ -168,10 +167,11 @@ for x in range(0, image_width):
         pbar.update(1)
 
 end_time = time.time()
+pbar.close()
 print(f"Rendered in {end_time - start_time:.2f} seconds")
 
 # Save Render
-image.save("render.png", format="png")
+image.save("renders/render.png", format="png")
 
 
 # Display
@@ -179,7 +179,7 @@ image.save("render.png", format="png")
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
-img = mpimg.imread("render.png")
+img = mpimg.imread("renders/render.png")
 plt.imshow(img)
 plt.axis("off")
 plt.show()
