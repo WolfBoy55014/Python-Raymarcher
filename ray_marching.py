@@ -11,6 +11,7 @@ from ray import Ray
 from scene.scene import Scene
 from scene.materials import BaseMaterial
 from scene.objects.primative import *
+from scene.objects.mesh import *
 from scene.objects.modifier import *
 from scene.lights import PointLight
 from processing import ToneMapping
@@ -118,44 +119,34 @@ top_light = PointLight((0, 0, -2), 2, (255, 255, 255))
 
 
 # Define Scene
-scene = Scene(
-    (
-        ground,
-        desk_top1,
-        desk_top2,
-        desk_leg1,
-        desk_leg2,
-        desk_leg3,
-        drawer1,
-        drawer2,
-        drawer_mid,
-        drawer_bottom,
-    ),
-    (side_light1, side_light2, top_light),
-    min_distance,
-    max_distance,
-    True,
-)
-
-# debug = Box((0, 0, -0.5), (0.5, 0.5, 0.5), orange_mat)
-# debug = Cube((0, 0, -0.5), 0.5, orange_mat)
-# debug = Torus((0, 0, -0.25), 0.3, 0.1, orange_mat)
-# debug = Cylinder((0, 0, -0.5), 0.5, 0.3, orange_mat)
-# debug = RoundBox((0, 0, -0.5), (0.5, 0.5, 0.5), 0.1, orange_mat)
-
-# cube = Cube((0, 0, -0.5), 0.5, orange_mat)
-# sphere = Sphere((0, 0, -0.5), 0.32, green_mat)
-# 
 # scene = Scene(
-#     (ground, IntersectionObject(sphere, cube)),
-#     (side_light1,),
+#     (
+#         ground,
+#         desk_top1,
+#         desk_top2,
+#         desk_leg1,
+#         desk_leg2,
+#         desk_leg3,
+#         drawer1,
+#         drawer2,
+#         drawer_mid,
+#         drawer_bottom,
+#     ),
+#     (side_light1, side_light2, top_light),
 #     min_distance,
 #     max_distance,
-#     True
+#     True,
 # )
 
-# Compiling
-render(0, 0, scene)
+box = MeshObject((0, 0, -1), (0.3, 0.3, 0.3), 'box.stl', orange_mat)
+
+scene = Scene(
+    (ground, box),
+    (side_light1,),
+    min_distance,
+    max_distance,
+    False
+)
 
 # Create Image
 image = Image.new(mode="RGB", size=image_size)
