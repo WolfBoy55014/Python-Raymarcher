@@ -26,8 +26,8 @@ import time
 # 240p = 426 x 240 pixels
 # 720p = 1280 x 720 pixels
 # 1080p = 1920 x 1080 pixels
-image_height = 36
-image_width = 64
+image_height = 18
+image_width = 32
 image_size = (image_width, image_height)
 
 contrast = 70
@@ -137,10 +137,10 @@ top_light = PointLight((0, 0, -2), 2, (255, 255, 255))
 #     True,
 # )
 
-eevee = MeshObject((0, 2, -1), 'eevee_lowpoly_flowalistik.STL', orange_mat)
+box = MeshObject((0, 0, -1), (0.3, 0.3, 0.3), 'box.stl', orange_mat)
 
 scene = Scene(
-    (ground, ScaledObject(eevee, (0.2, 0.2, 0.2))),
+    (ground, box),
     (side_light1,),
     min_distance,
     max_distance,

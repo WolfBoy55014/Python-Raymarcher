@@ -4,18 +4,23 @@ import numpy as np
 from scene.materials import *
 from util import clamp
 import trimesh
+from trimesh.proximity import ProximityQuery
 import math
 
 
 class MeshObject(SceneObject):
 
-    def __init__(self, pos: np.ndarray, file_name: str, material: Material) -> None:
-        self.pos = pos
+    def __init__(self, pos: np.ndarray, scale: np.ndarray, file_name: str, material: Material) -> None:
+        self.pos = (pos[0], pos[1], pos[2])
         self.material = material
         self.mesh: trimesh.Trimesh = trimesh.load(file_name, force="mesh")
 
+        # self.mesh.convert_units("meters", True)
+        self.mesh.apply_scale(scale)
         self.mesh.apply_translation(self.pos)
-        self.mesh.convert_units("meters", True)
+
+        print("Mesh at:", self.mesh.centroid)
+        print("Mesh vertices:", self.mesh.vertices)
 
         self.vertices = self.mesh.vertices
         self.faces = self.mesh.faces
@@ -38,7 +43,7 @@ class MeshObject(SceneObject):
                 )
             )
 
-        return math.sqrt(min(distances)) - 0.01
+        return math.sqrt(min(distances)) - 0.05
 
     def _triangle(self, ray: Ray, a, b, c) -> float:
         p = ray.getPosition()
@@ -94,4 +99,4 @@ class MeshObject(SceneObject):
         return self.material
 
     def getNormal(self, ray: Ray):
-        return (0, 0, 0)
+        return super().getNormal(ray)
