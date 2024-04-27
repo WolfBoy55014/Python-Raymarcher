@@ -11,6 +11,7 @@ from ray import Ray
 from scene.scene import Scene
 from scene.materials import BaseMaterial
 from scene.objects.primative import *
+from scene.objects.mesh import *
 from scene.objects.modifier import *
 from scene.lights import PointLight
 from processing import ToneMapping
@@ -25,8 +26,8 @@ import time
 # 240p = 426 x 240 pixels
 # 720p = 1280 x 720 pixels
 # 1080p = 1920 x 1080 pixels
-image_height = 18
-image_width = 32
+image_height = 36
+image_width = 64
 image_size = (image_width, image_height)
 
 contrast = 70
@@ -117,32 +118,34 @@ top_light = PointLight((0, 0, -2), 2, (255, 255, 255))
 
 
 # Define Scene
-scene = Scene(
-    (
-        ground,
-        desk_top1,
-        desk_top2,
-        desk_leg1,
-        desk_leg2,
-        desk_leg3,
-        drawer1,
-        drawer2,
-        drawer_mid,
-        drawer_bottom,
-    ),
-    (side_light1, side_light2, top_light),
-    min_distance,
-    max_distance,
-    True,
-)
-
 # scene = Scene(
-#     (ground, Sphere((0, 0, -0.2), 0.4, orange_mat)),
-#     (side_light1,),
+#     (
+#         ground,
+#         desk_top1,
+#         desk_top2,
+#         desk_leg1,
+#         desk_leg2,
+#         desk_leg3,
+#         drawer1,
+#         drawer2,
+#         drawer_mid,
+#         drawer_bottom,
+#     ),
+#     (side_light1, side_light2, top_light),
 #     min_distance,
 #     max_distance,
-#     True
+#     True,
 # )
+
+eevee = MeshObject((0, 2, -1), 'eevee_lowpoly_flowalistik.STL', orange_mat)
+
+scene = Scene(
+    (ground, ScaledObject(eevee, (0.2, 0.2, 0.2))),
+    (side_light1,),
+    min_distance,
+    max_distance,
+    False
+)
 
 # Create Image
 image = Image.new(mode="RGB", size=image_size)
