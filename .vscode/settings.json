@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
         "ndarray"
-    ]
+    ],
+    "python.analysis.typeCheckingMode": "off"
 }

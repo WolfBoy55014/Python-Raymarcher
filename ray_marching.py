@@ -26,8 +26,8 @@ import time
 # 240p = 426 x 240 pixels
 # 720p = 1280 x 720 pixels
 # 1080p = 1920 x 1080 pixels
-image_height = 18
-image_width = 32
+image_height = 72
+image_width = 128
 image_size = (image_width, image_height)
 
 contrast = 70
@@ -35,7 +35,7 @@ fov = 1
 shading = False
 
 camera_pos = (0, -1.5, -1)
-camera_rotation = (0, 0, 0.5)
+camera_rotation = (0, 0, 0.3)
 
 min_distance = 0.001
 max_distance = 25
@@ -83,20 +83,18 @@ def render(x, y, scene):
     return miss(scene, ray)
 
 
-color1 = (77, 32, 21)
-color2 = (177, 103, 57)
-color3 = (195, 178, 159)
-color4 = (229, 169, 59)
-color5 = (4, 111, 147)
-color6 = (83, 149, 67)
+color1 = (0, 117, 242)
+color2 = (7, 7, 7)
+color3 = (186, 186, 186)
+color4 = (227, 227, 227)
+color5 = (255, 255, 255)
 
 # Defining Material
-dark_wood_mat = BaseMaterial(color1)
-light_wood_mat = BaseMaterial(color3)
-orange_mat = BaseMaterial(color2)
-yellow_mat = BaseMaterial(color4)
-blue_mat = BaseMaterial(color5)
-green_mat = BaseMaterial(color6)
+blue_mat = BaseMaterial(color1)
+black_mat = BaseMaterial(color2)
+dark_grey_mat = BaseMaterial(color3)
+light_grey_mat = BaseMaterial(color4)
+white_mat = BaseMaterial(color5)
 
 
 # Defining Objects
@@ -119,41 +117,42 @@ top_light = PointLight((0, 0, -2), 2, (255, 255, 255))
 
 
 # Define Scene
-# scene = Scene(
-#     (
-#         ground,
-#         desk_top1,
-#         desk_top2,
-#         desk_leg1,
-#         desk_leg2,
-#         desk_leg3,
-#         drawer1,
-#         drawer2,
-#         drawer_mid,
-#         drawer_bottom,
-#     ),
-#     (side_light1, side_light2, top_light),
-#     min_distance,
-#     max_distance,
-#     True,
-# )
-
-box = MeshObject((0, 0, -1), (0.3, 0.3, 0.3), 'box.stl', orange_mat)
-
 scene = Scene(
-    (ground, box),
-    (side_light1,),
+    (
+        ground,
+        desk_top1,
+        desk_top2,
+        desk_leg1,
+        desk_leg2,
+        desk_leg3,
+        drawer1,
+        drawer2,
+        drawer_mid,
+        drawer_bottom,
+    ),
+    (side_light1, side_light2, top_light),
     min_distance,
     max_distance,
-    False
+    True,
 )
+
+# box = MeshObject((0, 0, -1), (0.3, 0.3, 0.3), 'box.stl', orange_mat)
+# iso = MeshObject((0, 0, -0.7), (0.4, 0.4, 0.4), 'iso.stl', yellow_mat)
+# 
+# scene = Scene(
+#     (ground, iso),
+#     (side_light1,),
+#     min_distance,
+#     max_distance,
+#     True
+# )
 
 # Create Image
 image = Image.new(mode="RGB", size=image_size)
 render_image = image.load()
 
 # Create Progress Bar
-pbar = tqdm(total=image_width * image_height, unit=" pixels")
+pbar = tqdm(total=image_width * image_height, unit=" pixels", unit_scale=True)
 start_time = time.time()
 
 for x in range(0, image_width):

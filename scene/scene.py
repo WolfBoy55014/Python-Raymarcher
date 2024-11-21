@@ -152,3 +152,5 @@ class Scene:
         else:
             # We were in a shadow
             return 0.0
+        
+        
